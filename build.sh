@@ -1,6 +1,10 @@
 #!/bin/bash
 # This script builds the project with specific configurations for the ILI9488 display.
 
+sudo rm -rf build
+echo -e "\e[31Build folder removed.\e[0m"
+sudo mkdir build
+
 cmake .. \
   -DILI9488=ON \
   -DGPIO_TFT_DATA_CONTROL=24 \
@@ -13,6 +17,11 @@ cmake .. \
   -DDMA_RX_CHANNEL=1 \
   -DDISPLAY_CROPPED_INSTEAD_OF_SCALING=ON \
   -DDISPLAY_BREAK_ASPECT_RATIO_WHEN_SCALING=ON \
-  -DSHOW_DEBUG_INFO=OFF
+  -DSHOW_DEBUG_INFO=OFF \
   -DDISPLAY_SHOW_TEMPERATURE=OFF \
-  -DDISPLAY_SWAP_XY_IN_SOFTWARE=ON \
+  -DDISPLAY_SWAP_XY_IN_SOFTWARE=ON
+
+echo -e "\e[32mCMake configuration completed.\e[0m"
+
+sudo make -j
+echo -e "\e[32mBuild completed successfully.\e[0m"
