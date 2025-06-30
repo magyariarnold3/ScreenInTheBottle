@@ -1,6 +1,9 @@
 #!/bin/bash
 # This script builds the project with specific configurations for the ILI9488 display.
 
+# entry in fbcp-ili9341 directory, because not allowed to copy directly from windows in this folder
+cd fbcp-ili9341
+
 sudo rm -rf build
 echo -e "\e[31Build folder removed.\e[0m"
 sudo mkdir build
