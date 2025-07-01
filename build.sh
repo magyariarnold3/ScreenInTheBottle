@@ -5,10 +5,12 @@
 cd fbcp-ili9341
 
 sudo rm -rf build
-echo -e "\e[31Build folder removed.\e[0m"
+echo -e "\e[31mBuild folder removed.\e[0m"
 sudo mkdir build
+cd build
+pwd
 
-cmake .. \
+sudo cmake .. \
   -DILI9488=ON \
   -DGPIO_TFT_DATA_CONTROL=24 \
   -DGPIO_TFT_RESET_PIN=25 \
@@ -18,11 +20,11 @@ cmake .. \
   -DUSE_DMA_TRANSFERS=ON \
   -DDMA_TX_CHANNEL=3 \
   -DDMA_RX_CHANNEL=1 \
-  -DDISPLAY_CROPPED_INSTEAD_OF_SCALING=ON \
+  -DDISPLAY_CROPPED_INSTEAD_OF_SCALING=OFF \
   -DDISPLAY_BREAK_ASPECT_RATIO_WHEN_SCALING=ON \
   -DSHOW_DEBUG_INFO=OFF \
   -DDISPLAY_SHOW_TEMPERATURE=OFF \
-  -DDISPLAY_SWAP_XY_IN_SOFTWARE=ON
+  -DDISPLAY_SWAP_XY_IN_SOFTWARE=OFF
 
 echo -e "\e[32mCMake configuration completed.\e[0m"
 
