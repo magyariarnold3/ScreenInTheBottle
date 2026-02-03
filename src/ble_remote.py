@@ -1,31 +1,71 @@
 import evdev
-from evdev import InputDevice, categorize, ecodes
+import time
 
-devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
+TARGET_NAME = "BLE-M3 UNKNOWN"
 
-print("Available input devices:")
-print("------------------------")
-for i, device in enumerate(devices):
-    print(f"{i}: {device.path} - {device.name} - {device.phys}")
+def find_device_by_name(target_name):
+    devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
+    for device in devices:
+        if device.name == target_name:
+            return device
+    return None
 
-try:
-    device_index = int(input("Select a device by entering its index: "))
-    selected_device = devices[device_index]
-except:
-    print("Invalid selection.")
-    exit(1)
+def is_increasing(values):
+    count = 0
+    for i in range(1, len(values)):
+        if (values[i] > values[i-1]):
+            count += 1
+    if count >= len(values) / 2:
+        return True
+    return False
 
-print(f"\nPush the buttons on the selected device ({selected_device.name}). Press Ctrl+C to exit.\n")
+def is_declining(values):
+    count = 0
+    for i in range(1, len(values)):
+        if (values[i] < values[i-1]):
+            count += 1
+    if count >= len(values) / 2:
+        return True
+    return False
 
-try:
-    for event in selected_device.read_loop():
-        if event.type == ecodes.EV_KEY:
-            key_event = categorize(event)
-            if key_event.keystate == key_event.key_down:
-                print(f"Key pressed: {key_event.keycode}")
-            elif key_event.keystate == key_event.key_up:
-                print(f"Key released: {key_event.keycode}")
-except KeyboardInterrupt:
-    print("\nExiting...")
-except OSError:
-    print("Device disconnected. Exiting...")
+def decode_event(events, code):
+    values: list[int] = [event.value for event in events]
+    print(f"Values: {values}")
+    if code == 54:
+        if is_increasing(values):
+            print("Up")
+        elif is_declining(values):
+            print("Down")
+    elif code == 53:
+        if is_increasing(values):
+            print("Left")
+        elif is_declining(values):
+            print("Right")
+    elif code == 57:
+        print("Bottom Button Pressed")
+
+def main():
+    device = None
+    while device is None:
+        device = find_device_by_name(TARGET_NAME)
+        if device is None:
+            print(f"Device '{TARGET_NAME}' not found. Please connect the device and press Enter to retry.")
+            time.sleep(1)
+
+    current_batch: list = []
+    code = 0
+    for event in device.read_loop():
+        if event.type == evdev.ecodes.EV_ABS:
+            # print(f"Code: {event.code} - {event.value}")
+            if event.code in [53, 54]:
+                code = event.code
+                current_batch.append(event)
+            elif event.code == 57 and event.value == -1:
+                if len(current_batch) > 0:
+                    decode_event(current_batch, code)
+                    current_batch = []
+                    code = 0
+
+if __name__ == "__main__":
+    main()
+
