@@ -87,6 +87,11 @@ Stay in the build folder, rename fbcp-ili9341 to fbcp and copy to /usr/local/bin
 ```
 
 ## PDF reader and controll
+> **The operating system used**\
+*Raspberry Pi OS Lite (32-bit)*\
+*A port of Debian Trixie with no desktop environment*\
+*Released: 2025-12-04*
+
 ### Step 1
 * `cage` it is a kiosk
 * `zathura` it is a pdf reader app
@@ -118,4 +123,11 @@ scan on
 pair XX:XX:XX:XX:XX:XX
 trust XX:XX:XX:XX:XX:XX
 connect XX:XX:XX:XX:XX:XX
+```
+
+### Step 4
+```bash
+sudo apt install wtype
+# send a sapce key e.g
+wtype -k space
 ```

@@ -1,5 +1,6 @@
 import evdev
 import time
+import subprocess
 
 TARGET_NAME = "BLE-M3 UNKNOWN"
 
@@ -10,6 +11,11 @@ def find_device_by_name(target_name):
             return device
     return None
 
+def run_wtype(key_name):
+    try:
+        subprocess.run(["wtype", "-k", key_name], check=True)
+    except Exception as err:
+        raise Exception (f"Error executing wtype: {err}")
 
 def is_increasing(values):
     count = 0
@@ -31,26 +37,27 @@ def is_declining(values):
     return False
 
 
-def decode_event_four_button(values, code, previous_button):
-    #print(f"Values: {values}"
-    if len(values) > 2:
-        if code == 54:
-            if is_increasing(values):
-                return "Up"
-            elif is_declining(values):
-                return "Down"
-        elif code == 53:
-            if is_increasing(values):
-                return "Left"
-            elif is_declining(values):
-                return "Right"
-    elif len(values) == 2 or len(values) == 1:
-        if 828 in values:
-            return "Bottom Button"
-        if 300 in values or 501 in values:
-            return "Middle Button"
+def decode_event(current_batch, code, previous_button):
+    values: list[int] = [event.value for event in current_batch]
+    if len(current_batch) > 0:
+        if len(values) > 2:
+            if code == 54:
+                if is_increasing(values):
+                    return "UP", [], 0
+                elif is_declining(values):
+                    return "DOWN", [], 0
+            elif code == 53:
+                if is_increasing(values):
+                    return "LEFT", [], 0
+                elif is_declining(values):
+                    return "RIGHT", [], 0
+        elif len(values) == 2 or len(values) == 1:
+            if 828 in values:
+                return "Bottom Button", [], 0
+            if 300 in values or 501 in values:
+                return "Middle Button", [], 0
     else:
-        return previous_button
+        return previous_button, [], 0
 
 
 def main():
@@ -65,7 +72,6 @@ def main():
 
             current_batch: list = []
             code = 0
-            previous_button = ""
             pressed_button = ""
             for event in device.read_loop():
                 # must use EV_ABS(type = 3) to filter other codes
@@ -77,15 +83,8 @@ def main():
 
                     # if sending the end command, which has code = 57 and value = -1
                     if event.code == 57 and event.value == -1:
-                        values: list[int] = [event.value for event in current_batch]
-                        if len(current_batch) > 0:
-                            pressed_button = decode_event_four_button(values, code, previous_button)
-                            previous_button = pressed_button
-                            print(pressed_button)
-                            current_batch = []
-                            code = 0
-                        else:
-                            print(previous_button)
+                        pressed_button, current_batch, code = decode_event(current_batch, code, pressed_button)
+                        print(pressed_button)
         except OSError:
             print("The device is disconnected")
             time.sleep(3)
