@@ -31,23 +31,26 @@ def is_declining(values):
     return False
 
 
-def decode_event(events, code):
-    values: list[int] = [event.value for event in events]
-    print(f"Values: {values}")
+def decode_event_four_button(values, code, previous_button):
+    #print(f"Values: {values}"
     if len(values) > 2:
         if code == 54:
             if is_increasing(values):
-                print("Up")
+                return "Up"
             elif is_declining(values):
-                print("Down")
+                return "Down"
         elif code == 53:
             if is_increasing(values):
-                print("Left")
+                return "Left"
             elif is_declining(values):
-                print("Right")
+                return "Right"
+    elif len(values) == 2 or len(values) == 1:
+        if 828 in values:
+            return "Bottom Button"
+        if 300 in values or 501 in values:
+            return "Middle Button"
     else:
-        if code == 57:
-            print("Bottom Button Pressed")
+        return previous_button
 
 
 def main():
@@ -62,17 +65,27 @@ def main():
 
             current_batch: list = []
             code = 0
+            previous_button = ""
+            pressed_button = ""
             for event in device.read_loop():
+                # must use EV_ABS(type = 3) to filter other codes
                 if event.type == evdev.ecodes.EV_ABS:
-                    print(f"Code: {event.code} - {event.value}")
-                    if event.code in [53, 54, 57]:
+                    # print(f"Code: {event.code} - {event.value}")
+                    if event.code in [53, 54]:
                         code = event.code
                         current_batch.append(event)
+
+                    # if sending the end command, which has code = 57 and value = -1
                     if event.code == 57 and event.value == -1:
+                        values: list[int] = [event.value for event in current_batch]
                         if len(current_batch) > 0:
-                            decode_event(current_batch, code)
+                            pressed_button = decode_event_four_button(values, code, previous_button)
+                            previous_button = pressed_button
+                            print(pressed_button)
                             current_batch = []
                             code = 0
+                        else:
+                            print(previous_button)
         except OSError:
             print("The device is disconnected")
             time.sleep(3)
