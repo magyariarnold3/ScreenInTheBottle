@@ -105,6 +105,11 @@ Use these commands if you don't have a physical screen and use VNC viewer
 ```bash
  WLR_BACKENDS=headless cage -- bash -c "wayvnc 0.0.0.0 5902 & sleep 4; wlr-randr --output HEADLESS-1 --custom-mode 480x640; zathura /home/pi/Haskell.pdf"
 ```
+or run this start_gui.sh file
+```bash
+chmod +x start_gui.sh
+./start_gui.sh
+```
 
 ### Step 3
 Connect shutter to the raspberry

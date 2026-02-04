@@ -1,0 +1,5 @@
+set adjust-open width
+
+set guioptions none
+
+set scroll-full-overlap 0.15
